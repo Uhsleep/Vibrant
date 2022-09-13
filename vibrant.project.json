@@ -1,0 +1,48 @@
+{
+    "name": "CW-Vi",
+    "tree": {
+      "$className": "DataModel",
+  
+      "ReplicatedStorage": {
+        "$className": "ReplicatedStorage",
+  
+        "vibrant": {
+          "$path": "vibrant"
+        },
+
+        "dependencies": {
+            "$path": "dependencies"
+        }
+      },
+      
+      "StarterPlayer": {
+        "$className": "StarterPlayer",
+  
+        "StarterPlayerScripts": {
+          "$className": "StarterPlayerScripts",
+  
+          "$path": "tests"
+        }
+      },
+  
+      "Workspace": {
+        "$className": "Workspace",
+        "$properties": {
+          "FilteringEnabled": true
+        }
+      },
+      
+      "SoundService": {
+        "$className": "SoundService",
+        "$properties": {
+          "RespectFilteringEnabled": true
+        }
+      },
+      "HttpService": {
+        "$className": "HttpService",
+        "$properties": {
+          "HttpEnabled": true
+        }
+      }
+    }
+  }
