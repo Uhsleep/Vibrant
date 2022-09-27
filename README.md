@@ -1,7 +1,7 @@
-# cw-vibrant
+# Vibrant
 Roblox UI toolkit for plugins implemented using Roact
 
 **Dependencies**
 
-- Roact v1.4.4
+- [Roact](https://github.com/Roblox/roact) (v1.4.4)
 
