@@ -2,3 +2,6 @@
 /*.rbxlx.lock
 /*.rbxl.lock
 /*.rbxlx
+/*.rbxl
+/*.rbxmx
+build/

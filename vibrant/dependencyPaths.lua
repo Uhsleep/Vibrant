@@ -2,5 +2,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 return {
-    Roact = ReplicatedStorage.dependencies.Roact
+    Roact = script.Parent.Parent.Roact
 }

@@ -44,9 +44,9 @@ function StudioToolbarButton:didMount()
 end
 
 function StudioToolbarButton:didUpdate(lastProps)
-	if self.props.active ~= lastProps.active then
-		self.button:SetActive(self.props.active)
-	end
+    if self.props.active ~= lastProps.active then
+        self.button:SetActive(self.props.active)
+    end
 end
 
 function StudioToolbarButton:willUnmount()

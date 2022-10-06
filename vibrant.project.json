@@ -5,13 +5,17 @@
   
       "ReplicatedStorage": {
         "$className": "ReplicatedStorage",
-  
-        "vibrant": {
-          "$path": "vibrant"
-        },
 
-        "dependencies": {
-            "$path": "dependencies"
+        "plugin": {
+          "$path": "tests",
+
+          "dependencies": {
+            "$path": "dependencies",
+
+            "vibrant": {
+              "$path": "vibrant"
+            }
+          }
         }
       },
       
