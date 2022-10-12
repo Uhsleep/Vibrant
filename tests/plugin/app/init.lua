@@ -5,6 +5,8 @@ local StudioToolbar = require(Root.dependencies.vibrant.components.plugin.Studio
 local StudioToolbarButton = require(Root.dependencies.vibrant.components.plugin.StudioToolbarButton)
 local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.plugin.StudioDockWidgetGui)
 
+local ButtonsEntry = require(script.list_entries.ButtonsEntry)
+
 local e = Roact.createElement
 -----------------------------------------------------------------------------
 
@@ -51,9 +53,9 @@ function App:render()
         StudioDockWidget = e(StudioDockWidgetGui, {
             enabled = self.state.enabled,
             title = "Vibrant Demo",
+            initialDockState = Enum.InitialDockState.Float,
 
             onInitialState = function(enabled)
-                print("Got initial state:", enabled)
                 self:setState({
                     enabled = enabled
                 })
@@ -65,13 +67,16 @@ function App:render()
                 })
             end
         }, {
-            SomeText = e("TextLabel", {
-                AnchorPoint = Vector2.new(0.5, 0.5),
-                Position = UDim2.new(0.5, 0, 0.5, 0),
-                Size = UDim2.new(1, 0, 1, 0),
-                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                TextScaled = true,
-                Text = "Hello Plugin"
+            ListLayout = e("UIListLayout", {
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                Padding = UDim.new(0, 5)
+            }),
+
+            ButtonListEntry = e("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 100)
+            }, {
+                ButtonsEntry = e(ButtonsEntry)
             })
         }),
     })
