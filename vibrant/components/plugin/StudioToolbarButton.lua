@@ -1,5 +1,5 @@
-local Assets = require(script.Parent.Parent.Parent.assets)
-local Dependencies = require(script.Parent.Parent.Parent.dependencyPaths)
+local Assets = require(script.Parent.Parent.Parent.Assets)
+local Dependencies = require(script.Parent.Parent.Parent.DependencyPaths)
 local Roact = require(Dependencies.Roact)
 
 local Dictionary = require(script.Parent.Parent.Parent.utils.Dictionary)
@@ -11,7 +11,7 @@ local e = Roact.createElement
 local defaultProps = {
     text = "Toolbar button",
     tooltipDescription = "A toolbar button used to enable/disable plugin widgets",
-    icon = Assets.toolbarButtonDefaultIcon,
+    icon = Assets.ToolbarButtonDefaultIcon,
     active = false
 }
 

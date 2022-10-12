@@ -1,4 +1,4 @@
-local Dependencies = require(script.Parent.Parent.Parent.dependencyPaths)
+local Dependencies = require(script.Parent.Parent.Parent.DependencyPaths)
 local Roact = require(Dependencies.Roact)
 local e = Roact.createElement
 
@@ -7,24 +7,16 @@ local StudioPluginContext = require(script.Parent.StudioPluginContext)
 
 -----------------------------------------------------------------------------
 
-local defaultProps = {
+local StudioDockWidgetGui = Roact.Component:extend("StudioDockWidgetGui")
+StudioDockWidgetGui.defaultProps = {
     title = "Dock Widget Gui",
-    enabled = false
+    enabled = false,
+    initialDockState = Enum.InitialDockState.Left
 }
 
-local function ensurePropValues(componentProps, defaultProps)
-    for key, value in pairs(defaultProps) do
-        componentProps[key] = componentProps[key] or value
-    end
-end
-
-local StudioDockWidgetGui = Roact.Component:extend("StudioDockWidgetGui")
-
 function StudioDockWidgetGui:init()
-    ensurePropValues(self.props, defaultProps)
-
     local widgetInfo = DockWidgetPluginGuiInfo.new(
-        Enum.InitialDockState.Left,
+        self.props.initialDockState,
         true,
         false,
         200,
@@ -54,10 +46,6 @@ function StudioDockWidgetGui:render()
         target = self.dockWidget
     }, self.props[Roact.Children])
 end
-
--- function StudioDockWidgetGui:didMount()
-    
--- end
 
 function StudioDockWidgetGui:didUpdate(lastProps)
     if self.props.enabled ~= lastProps.enabled then

@@ -1,12 +1,12 @@
 {
-    "name": "CW-Vi",
+    "name": "CW-Vibrant",
     "tree": {
       "$className": "DataModel",
   
       "ReplicatedStorage": {
         "$className": "ReplicatedStorage",
 
-        "plugin": {
+        "vibrant_plugin": {
           "$path": "tests",
 
           "dependencies": {
