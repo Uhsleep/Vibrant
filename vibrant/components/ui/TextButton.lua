@@ -1,7 +1,7 @@
 local Vibrant = script:FindFirstAncestor("vibrant")
 local Dependencies = require(Vibrant.DependencyPaths)
 
-local Assets = require(script.Parent.Parent.Parent.Assets)
+local Assets = require(Vibrant.Assets)
 local Roact = require(Dependencies.Roact)
 
 local ButtonBackground = Assets.ButtonBackground
@@ -101,7 +101,6 @@ function TextButton:render()
             Size = UDim2.new(1, 0, 1, 0),
             ImageColor3 = self.props.color,
 
-            -- TODO: Events
             [Roact.Event.MouseEnter] = self.onMouseEnter,
             [Roact.Event.MouseLeave] = self.onMouseLeave,
             [Roact.Event.MouseButton1Down] = self.onMouseDown,
