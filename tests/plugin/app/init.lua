@@ -6,6 +6,7 @@ local StudioToolbarButton = require(Root.dependencies.vibrant.components.plugin.
 local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.plugin.StudioDockWidgetGui)
 
 local ButtonsEntry = require(script.list_entries.ButtonsEntry)
+local TextBoxEntry = require(script.list_entries.TextBoxEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -77,6 +78,13 @@ function App:render()
                 Size = UDim2.new(1, 0, 0, 100)
             }, {
                 ButtonsEntry = e(ButtonsEntry)
+            }),
+
+            TextBoxListEntry = e("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 100),
+            }, {
+                TextBoxEntry = e(TextBoxEntry)
             })
         }),
     })

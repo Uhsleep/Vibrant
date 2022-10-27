@@ -9,16 +9,17 @@ local StudioPluginContext = require(script.Parent.StudioPluginContext)
 
 local StudioDockWidgetGui = Roact.Component:extend("StudioDockWidgetGui")
 StudioDockWidgetGui.defaultProps = {
-    title = "Dock Widget Gui",
     enabled = false,
-    initialDockState = Enum.InitialDockState.Left
+    initialDockState = Enum.InitialDockState.Left,
+    overridePreviousState = false,
+    title = "Dock Widget Gui",
 }
 
 function StudioDockWidgetGui:init()
     local widgetInfo = DockWidgetPluginGuiInfo.new(
         self.props.initialDockState,
-        true,
-        false,
+        self.props.enabled,
+        self.props.overridePreviousState,
         200,
         300,
         150,
@@ -26,6 +27,7 @@ function StudioDockWidgetGui:init()
     )
 
     self.dockWidget = self.props.plugin:CreateDockWidgetPluginGui(self.props.title .. "DockWidgetGui", widgetInfo)
+    self.dockWidget.Name = self.props.title
     self.dockWidget.Title = self.props.title
 
     if self.props.onInitialState then
