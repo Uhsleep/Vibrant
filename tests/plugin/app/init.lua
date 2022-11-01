@@ -5,8 +5,9 @@ local StudioToolbar = require(Root.dependencies.vibrant.components.plugin.Studio
 local StudioToolbarButton = require(Root.dependencies.vibrant.components.plugin.StudioToolbarButton)
 local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.plugin.StudioDockWidgetGui)
 
-local ButtonsEntry = require(script.list_entries.ButtonsEntry)
+local ButtonEntry = require(script.list_entries.ButtonEntry)
 local TextBoxEntry = require(script.list_entries.TextBoxEntry)
+local SliderEntry = require(script.list_entries.SliderEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -70,21 +71,32 @@ function App:render()
         }, {
             ListLayout = e("UIListLayout", {
                 HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                Padding = UDim.new(0, 5)
+                Padding = UDim.new(0, 5),
+                SortOrder = Enum.SortOrder.LayoutOrder
             }),
 
             ButtonListEntry = e("Frame", {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 100)
+                Size = UDim2.new(1, 0, 0, 100),
+                LayoutOrder = 0
             }, {
-                ButtonsEntry = e(ButtonsEntry)
+                ButtonsEntry = e(ButtonEntry)
             }),
 
             TextBoxListEntry = e("Frame", {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 100),
+                LayoutOrder = 1
             }, {
                 TextBoxEntry = e(TextBoxEntry)
+            }),
+
+            SliderListEntry = e("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 100),
+                LayoutOrder = 2
+            }, {
+                SliderEntry = e(SliderEntry)
             })
         }),
     })
