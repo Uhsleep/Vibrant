@@ -8,6 +8,7 @@ local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.plugin.
 local ButtonEntry = require(script.list_entries.ButtonEntry)
 local TextBoxEntry = require(script.list_entries.TextBoxEntry)
 local SliderEntry = require(script.list_entries.SliderEntry)
+local ComboBoxEntry = require(script.list_entries.ComboBoxEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -97,6 +98,14 @@ function App:render()
                 LayoutOrder = 2
             }, {
                 SliderEntry = e(SliderEntry)
+            }),
+
+            ComboBoxEntry = e("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 100),
+                LayoutOrder = 3
+            }, {
+                ComboBoxEntry = e(ComboBoxEntry)
             })
         }),
     })
