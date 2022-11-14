@@ -13,6 +13,7 @@ StudioDockWidgetGui.defaultProps = {
     initialDockState = Enum.InitialDockState.Left,
     overridePreviousState = false,
     title = "Dock Widget Gui",
+    zIndexBehavior = Enum.ZIndexBehavior.Sibling
 }
 
 function StudioDockWidgetGui:init()
@@ -29,6 +30,7 @@ function StudioDockWidgetGui:init()
     self.dockWidget = self.props.plugin:CreateDockWidgetPluginGui(self.props.title .. "DockWidgetGui", widgetInfo)
     self.dockWidget.Name = self.props.title
     self.dockWidget.Title = self.props.title
+    self.dockWidget.ZIndexBehavior = self.props.zIndexBehavior
 
     if self.props.onInitialState then
         self.props.onInitialState(self.dockWidget.Enabled)
