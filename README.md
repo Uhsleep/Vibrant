@@ -1,4 +1,5 @@
-# Vibrant
+![Vibrant](resources/vibrant-logo.png)
+
 Roblox UI toolkit for plugins implemented using Roact
 
 **Dependencies**
