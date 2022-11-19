@@ -1,4 +1,6 @@
-![Vibrant](resources/vibrant-logo.png)
+<p align="center">
+  <img src="resources/vibrant-logo.png">
+</p>
 
 Roblox UI toolkit for plugins implemented using Roact
 
