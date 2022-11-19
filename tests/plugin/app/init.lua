@@ -1,15 +1,16 @@
 local Root = script.Parent.Parent
 local Roact = require(Root.dependencies.Roact)
-local StudioPluginContext = require(Root.dependencies.vibrant.components.plugin.StudioPluginContext)
-local StudioToolbar = require(Root.dependencies.vibrant.components.plugin.StudioToolbar)
-local StudioToolbarButton = require(Root.dependencies.vibrant.components.plugin.StudioToolbarButton)
-local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.plugin.StudioDockWidgetGui)
+local StudioPluginContext = require(Root.dependencies.vibrant.components.studio.StudioPluginContext)
+local StudioToolbar = require(Root.dependencies.vibrant.components.studio.StudioToolbar)
+local StudioToolbarButton = require(Root.dependencies.vibrant.components.studio.StudioToolbarButton)
+local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.studio.StudioDockWidgetGui)
 
 local ButtonEntry = require(script.list_entries.ButtonEntry)
 local TextBoxEntry = require(script.list_entries.TextBoxEntry)
 local SliderEntry = require(script.list_entries.SliderEntry)
 local ComboBoxEntry = require(script.list_entries.ComboBoxEntry)
 local NumericStepperEntry = require(script.list_entries.NumericStepperEntry)
+local TextAreaEntry = require(script.list_entries.TextAreaEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -134,7 +135,15 @@ function App:render()
                     Size = UDim2.new(1, 0, 0, 100),
                     LayoutOrder = 4
                 }, {
-                    InputStepper = e(NumericStepperEntry)
+                    NumericStepper = e(NumericStepperEntry)
+                }),
+
+                TextAreaEntry = e("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 500),
+                    LayoutOrder = 4
+                }, {
+                    TextArea = e(TextAreaEntry)
                 })
             })
         }),
