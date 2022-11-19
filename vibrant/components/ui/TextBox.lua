@@ -21,20 +21,21 @@ TODOS:
 
 local TextBox = Roact.Component:extend("TextBox")
 TextBox.defaultProps = {
+    -- Behavior
+    disabled = false,
+    errorMessage = "",
+    hasError = false,
+    maxLength = 5000,
+    onTextChanged = nil,
+    placeholderText = "Placeholder text...",
+    text = "",
+
+    -- Appearance
     backgroundColor = Color3.fromRGB(68, 68, 68),
     borderColor = Color3.fromRGB(30, 30, 30),
-    disabled = false,
     errorBorderColor = Color3.fromRGB(210, 39, 39),
-    errorMessage = "",
     focusedBorderColor = Color3.fromRGB(32, 113, 138),
-    hasError = false,
-    textColor = Color3.fromRGB(213, 213, 213),
-    text = "",
-    maxLength = 5000,
-    placeholderText = "Placeholder text...",
-
-    -- outputs,
-    onTextChanged = nil
+    textColor = Color3.fromRGB(213, 213, 213)
 }
 
 function TextBox:init()
@@ -54,7 +55,7 @@ function TextBox:init()
     end
 
     self.onTextChanged = function(textBox)
-        -- Roblox has direct way of setting a max character limit on textboxes so we have to do it ourselves
+        -- Roblox does not have a direct way of setting a max character limit on textboxes so we have to do it ourselves
         if textBox.Text:len() > self.props.maxLength then
             textBox.Text = textBox.Text:sub(1, self.props.maxLength)
             return

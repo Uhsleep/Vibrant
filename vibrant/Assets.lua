@@ -66,8 +66,28 @@ local Assets = {
 
     ComboBoxDownArrow = {
         Image = "rbxassetid://11493154762"
-    }
-}
+    },
 
+    -- TextAreas
+    TextAreaBackground = {
+        Image = "rbxassetid://11198628828", -- Using the button background image for now
+        Slice = {
+            Top = 7,
+            Left = 7,
+            Bottom = 53,
+            Right = 53,
+        }
+    },
+    
+    TextAreaBorder = {
+        Image = "rbxassetid://11381851165",
+        Slice = {
+            Top = 6,
+            Left = 6,
+            Bottom = 54,
+            Right = 54
+        }
+    },
+}
 
 return Assets
