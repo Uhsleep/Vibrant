@@ -1,3 +1,4 @@
+local ContentProvider = game:GetService("ContentProvider")
 local TextService = game:GetService("TextService")
 
 local Vibrant = script:FindFirstAncestor("vibrant")
@@ -52,16 +53,12 @@ function TextArea:init()
 
     self.onTextChanged = function(textArea)
         -- Roblox does not have a direct way of setting a max character limit on textAreaes so we have to do it ourselves
-        -- warn("new text:", textArea.Text)
         if textArea.Text:len() > self.props.maxLength then
             textArea.Text = textArea.Text:sub(1, self.props.maxLength)
             return
         end
 
-        -- Someone please offer a better way of doing this. This can't be the only way properly scale a scrolling frame canvas size
-        -- when AutomaticCanvasSize is already set to Y and TextArea.AutomaticSize is set to Y
-        local totalBounds = TextService:GetTextSize(textArea.Text, textArea.TextSize, textArea.Font, Vector2.new(textArea.AbsoluteSize.X, math.huge))
-        self.updateCanvasHeight(totalBounds.Y)
+        self:UpdateCanvasHeight(textArea)
 
         if type(self.props.onTextChanged) == "function" then
             self.props.onTextChanged(textArea.Text)
@@ -86,14 +83,22 @@ function TextArea:init()
 
                 return index - 1
             end
-
+            
             local textContainer = textArea.Parent
             local startScrollPosition = textContainer.CanvasPosition.Y
             local endScrollPosition = startScrollPosition + textContainer.AbsoluteWindowSize.Y
             
-            local caratHeight = TextService:GetTextSize("", textArea.TextSize, textArea.Font, Vector2.new(textArea.AbsoluteSize.X, math.huge)).Y
+            local textBoundsParams = Instance.new("GetTextBoundsParams")
+            textBoundsParams.Font = textArea.FontFace
+            textBoundsParams.Size = textArea.TextSize
+            textBoundsParams.Width = textArea.AbsoluteSize.X
+            
             local subStr = textArea.Text:sub(1, calculateSubStrEndPosition(textArea.Text, textArea.CursorPosition))
-            local textSize = TextService:GetTextSize(subStr, textArea.TextSize, textArea.Font, Vector2.new(textArea.AbsoluteSize.X, math.huge))
+            textBoundsParams.Text = subStr
+            local textSize = TextService:GetTextBoundsAsync(textBoundsParams)
+            
+            textBoundsParams.Text = ""
+            local caratHeight = TextService:GetTextBoundsAsync(textBoundsParams).Y
             local cursorPosition = textSize.Y - caratHeight
 
             if cursorPosition + caratHeight > endScrollPosition then
@@ -134,8 +139,17 @@ function TextArea:init()
     end
 
     self.onTextAreaSizeChanged = function(textArea)
-        local totalBounds = TextService:GetTextSize(textArea.Text, textArea.TextSize, textArea.Font, Vector2.new(textArea.AbsoluteSize.X, math.huge))
-        self.updateCanvasHeight(totalBounds.Y)
+        print("TextArea size changed")
+        self:UpdateCanvasHeight(textArea)
+    end
+
+    self.onTextFontChanged = function(textArea)
+        print("Text font changed")
+        self:UpdateCanvasHeight(textArea)
+    end
+
+    self.onTextSizeChanged = function(textArea)
+        self:UpdateCanvasHeight(textArea)
     end
 end
 
@@ -227,6 +241,8 @@ function TextArea:render()
             [Roact.Change.AbsoluteSize] = self.onTextAreaSizeChanged,
             [Roact.Change.CursorPosition] = self.onCursorPositionChanged,
             [Roact.Change.Text] = self.onTextChanged,
+            [Roact.Change.FontFace] = self.onTextFontChanged,
+            [Roact.Change.TextSize] = self.onTextSizeChanged,
             [Roact.Event.Focused] = self.onFocusedGained,
             [Roact.Event.FocusLost] = self.onFocusLost,
             [Roact.Event.InputChanged] = self.onInputChanged,
@@ -314,11 +330,29 @@ function TextArea:render()
     })
 end
 
+
 function TextArea:willUpdate(nextProps)
     -- Force remove focus when we are disabled
     if nextProps.disabled then
         self.updateIsFocused(false)
     end
+end
+
+function TextArea:UpdateCanvasHeight(textArea)
+    ContentProvider:PreloadAsync({ textArea.FontFace.Family })
+
+    local textBoundsParams = Instance.new("GetTextBoundsParams")
+    textBoundsParams.Text = textArea.Text
+    textBoundsParams.Font = textArea.FontFace
+    textBoundsParams.Size = textArea.TextSize
+    textBoundsParams.Width = textArea.AbsoluteSize.X
+
+    local success, result = pcall(TextService.GetTextBoundsAsync, TextService, textBoundsParams)
+    if not success then
+        warn("Failure calling GetTextBoundsAsync:", result)
+    end
+
+    self.updateCanvasHeight(result.Y + 1)
 end
 
 return TextArea
