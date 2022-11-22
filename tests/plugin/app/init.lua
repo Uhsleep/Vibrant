@@ -11,6 +11,7 @@ local SliderEntry = require(script.list_entries.SliderEntry)
 local ComboBoxEntry = require(script.list_entries.ComboBoxEntry)
 local NumericStepperEntry = require(script.list_entries.NumericStepperEntry)
 local TextAreaEntry = require(script.list_entries.TextAreaEntry)
+local CheckBoxEntry = require(script.list_entries.CheckBoxEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -140,10 +141,18 @@ function App:render()
 
                 TextAreaEntry = e("Frame", {
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 500),
+                    Size = UDim2.new(1, 0, 0, 300),
                     LayoutOrder = 4
                 }, {
                     TextArea = e(TextAreaEntry)
+                }),
+
+                CheckBoxEntry = e("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 100),
+                    LayoutOrder = 5
+                }, {
+                    CheckBox = e(CheckBoxEntry)
                 })
             })
         }),

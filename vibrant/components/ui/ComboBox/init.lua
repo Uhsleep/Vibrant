@@ -5,7 +5,6 @@ local Roact = require(Dependencies.Roact)
 
 local ComboBoxBorder = Assets.ComboBoxBorder
 local ComboBoxBackground = Assets.ComboBoxBackground
-local ComboBoxDownArrow = Assets.ComboBoxDownArrow
 
 local OptionsList = require(script.OptionsList)
 
@@ -202,7 +201,7 @@ function ComboBox:render()
             BorderSizePixel = 0,
             Position = UDim2.new(0.5, 0, 0.5, 0),
             Size = UDim2.new(1, 0, 1, 0),
-            Image = ComboBoxDownArrow.Image,
+            Image = Assets.ComboBoxDownArrow,
             ImageTransparency = self.props.disabled and 0.5 or 0,
             ImageColor3 = self.isDownArrowHoveredBinding:map(function(isDownArrowHovered)
                 if not isDownArrowHovered then
@@ -259,7 +258,7 @@ end
 function ComboBox:willUpdate(nextProps)
     if nextProps.disabled and nextProps.disabled ~= self.props.disabled then
         self.updateIsListOpen(false)
-        self.updateIsDwonArrowHovered(false)
+        self.updateIsDownArrowHovered(false)
     end
 end
 

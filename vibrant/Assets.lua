@@ -34,7 +34,7 @@ local Assets = {
     },
     
     TextBoxBorder = {
-        Image = "rbxassetid://11381851165",
+        Image = "rbxassetid://11633836146",
         Slice = {
             Top = 6,
             Left = 6,
@@ -45,7 +45,7 @@ local Assets = {
 
     -- ComboBoxes
     ComboBoxBorder = {
-        Image = "rbxassetid://11381851165", -- Using the TextBox background image for now
+        Image = "rbxassetid://11633836146", -- Using the TextBox border image for now
         Slice = {
             Top = 6,
             Left = 6,
@@ -64,9 +64,7 @@ local Assets = {
         }
     },
 
-    ComboBoxDownArrow = {
-        Image = "rbxassetid://11493154762"
-    },
+    ComboBoxDownArrow = "rbxassetid://11493154762",
 
     -- TextAreas
     TextAreaBackground = {
@@ -80,7 +78,7 @@ local Assets = {
     },
     
     TextAreaBorder = {
-        Image = "rbxassetid://11381851165",
+        Image = "rbxassetid://11633836146",
         Slice = {
             Top = 6,
             Left = 6,
@@ -88,6 +86,29 @@ local Assets = {
             Right = 54
         }
     },
+
+    -- CheckBoxes
+    CheckBoxBorder = {
+        Image = "rbxassetid://11633836146", -- Using the TextBox border image for now
+        Slice = {
+            Top = 6,
+            Left = 6,
+            Bottom = 54,
+            Right = 54
+        }
+    },
+
+    CheckBoxBackground = {
+        Image = "rbxassetid://11198628828", -- Using the button background image for now
+        Slice = {
+            Top = 7,
+            Left = 7,
+            Bottom = 53,
+            Right = 53,
+        }
+    },
+
+    CheckMark = "rbxassetid://11623766951"
 }
 
 return Assets

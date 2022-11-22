@@ -28,13 +28,13 @@ function TextAreaEntry:render()
             HorizontalAlignment = Enum.HorizontalAlignment.Center,
             Padding = UDim.new(0, 50),
             SortOrder = Enum.SortOrder.LayoutOrder,
-            VerticalAlignment = Enum.VerticalAlignment.Top
+            VerticalAlignment = Enum.VerticalAlignment.Center
         }),
 
         DefaultTextAreaContainer = e("Frame", {
             BackgroundTransparency = 1,
             LayoutOrder = 0,
-            Size = UDim2.new(0.45, 0, 0.6, 0),
+            Size = UDim2.new(0.45, 0, 0.9, 0),
         }, {
             DefaultTextArea = e(TextArea, {
                 text = self.state.defaultTextAreaText,
@@ -45,7 +45,7 @@ function TextAreaEntry:render()
         DisabledTextAreaContainer = e("Frame", {
             BackgroundTransparency = 1,
             LayoutOrder = 1,
-            Size = UDim2.new(0.45, 0, 0.6, 0),
+            Size = UDim2.new(0.45, 0, 0.9, 0),
         }, {
             DisabledTextArea = e(TextArea, {
                 disabled = true,
