@@ -4,6 +4,7 @@ local e = Roact.createElement
 
 local Dictionary = require(script.Parent.Parent.Parent.utils.Dictionary)
 local StudioPluginContext = require(script.Parent.StudioPluginContext)
+local StudioDockWidgetGuiContext = require(script.Parent.StudioDockWidgetGuiContext)
 
 -----------------------------------------------------------------------------
 
@@ -46,9 +47,9 @@ function StudioDockWidgetGui:init()
 end
 
 function StudioDockWidgetGui:render()
-    return e(Roact.Portal, {
-        target = self.dockWidget
-    }, self.props[Roact.Children])
+    return e(StudioDockWidgetGuiContext.Provider, { value = self.dockWidget }, {
+        e(Roact.Portal, { target = self.dockWidget }, self.props[Roact.Children])
+    })
 end
 
 function StudioDockWidgetGui:didUpdate(lastProps)
