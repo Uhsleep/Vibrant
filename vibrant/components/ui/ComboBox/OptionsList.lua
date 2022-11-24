@@ -87,7 +87,7 @@ function ComboBoxOptionsList:render()
             ScrollBarImageColor3 = self.props.scrollBarColor,
             VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
             CanvasSize = UDim2.new(0, 0, 0, 0),
-            ZIndex = 9999999,
+            ZIndex = self.props.zIndex,
 
             Size = self.props.size:map(function(absoluteSize)
                 return UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y *  math.clamp(#self.props.options, 1, 8))

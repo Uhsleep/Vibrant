@@ -237,6 +237,15 @@ function ComboBox:render()
 
     local optionsContent = nil
     if self.state.isListOpen then
+        -- Calculate the highest Z-Index
+        local highestZIndex = 0
+        for _, child in ipairs(self.props.dockWidget:GetChildren()) do
+            if child:IsA("GuiObject") and child.ZIndex > highestZIndex then
+                highestZIndex = child.ZIndex
+            end
+        end
+
+        props.optionsList.zIndex = highestZIndex + 1
         optionsContent = e(Roact.Portal, { target = self.props.dockWidget }, {
             OptionsList = e(OptionsList, props.optionsList)
         })
