@@ -1,11 +1,13 @@
 local Vibrant = script:FindFirstAncestor("vibrant")
 local Dependencies = require(Vibrant.DependencyPaths)
 local Assets = require(Vibrant.Assets)
+local Dictionary = require(Vibrant.utils.Dictionary)
 local Roact = require(Dependencies.Roact)
 
 local ComboBoxBorder = Assets.ComboBoxBorder
 local ComboBoxBackground = Assets.ComboBoxBackground
 
+local StudioDockWidgetGuiContext = require(Vibrant.components.studio.StudioDockWidgetGuiContext)
 local OptionsList = require(script.OptionsList)
 
 local e = Roact.createElement
@@ -44,16 +46,20 @@ ComboBox.defaultProps = {
 }
 
 function ComboBox:init()
-    self.comboBoxSizeBinding, self.updateComboBoxSize = Roact.createBinding(0)
+    self.comboBoxPositionBinding, self.updateComboBoxPosition = Roact.createBinding(Vector2.new())
+    self.comboBoxSizeBinding, self.updateComboBoxSize = Roact.createBinding(Vector2.new())
     self.isDownArrowHoveredBinding, self.updateIsDownArrowHovered = Roact.createBinding(false)
-    self.isListOpenBinding, self.updateIsListOpen = Roact.createBinding(false)
 
     self.onComboBoxAbsoluteSizeChanged = function(comboBoxBorder)
-        self.updateComboBoxSize(comboBoxBorder.AbsoluteSize.Y)
+        self.updateComboBoxSize(comboBoxBorder.AbsoluteSize)
 
         local downArrowContainer = comboBoxBorder.ComboBoxBackground.DownArrowContainer
         local textContainer = comboBoxBorder.ComboBoxBackground.TextContainer
         textContainer.Size = UDim2.new(UDim.new(1, -downArrowContainer.AbsoluteSize.X), textContainer.Size.Y)
+    end
+
+    self.onComboBoxAbsolutePositionChanged = function(comboBoxBorder)
+        self.updateComboBoxPosition(comboBoxBorder.AbsolutePosition)
     end
 
     self.onTextContainerSizeChanged = function(textContainer)
@@ -75,12 +81,16 @@ function ComboBox:init()
 
     self.onDownArrowContainerMouseClick = function()
         if not self.props.disabled then
-            self.updateIsListOpen(not self.isListOpenBinding:getValue())
+            self:setState({
+                isListOpen = not self.state.isListOpen
+            })
         end
     end
 
     self.onOptionSelected = function(option, index)
-        self.updateIsListOpen(false)
+        self:setState({
+            isListOpen = false
+        })
 
         if type(self.props.onOptionSelected) == "function" then
             self.props.onOptionSelected(option, index)
@@ -100,9 +110,15 @@ function ComboBox:init()
                 return
             end
             
-            self.updateIsListOpen(not self.isListOpenBinding:getValue())
+            self:setState({
+                isListOpen = not self.state.isListOpen
+            })
         end
     end
+
+    self:setState({
+        isListOpen = false
+    })
 end
 
 function ComboBox:render()
@@ -124,14 +140,18 @@ function ComboBox:render()
     local props = {
         optionsList = {
             options = self.props.options,
-            comboBoxSizeBinding = self.comboBoxSizeBinding,
             backgroundColor = self.props.backgroundColor,
             scrollBarColor = self.props.borderColor,
+            size = self.comboBoxSizeBinding,
             textColor = self.props.textColor,
             onOptionSelected = self.onOptionSelected,
-
-            visible = self.isListOpenBinding:map(function(isListOpen)
-                return isListOpen
+            visible = self.state.isListOpen,
+            
+            position = Roact.joinBindings({ self.comboBoxPositionBinding, self.comboBoxSizeBinding }):map(function(values)
+                local absolutePosition = values[1]
+                local absoluteSize = values[2]
+                
+                return UDim2.new(0, absolutePosition.X, 0, absolutePosition.Y + absoluteSize.Y)
             end)
         },
 
@@ -145,7 +165,8 @@ function ComboBox:render()
             SliceCenter = Rect.new(ComboBoxBorder.Slice.Left, ComboBoxBorder.Slice.Top, ComboBoxBorder.Slice.Right, ComboBoxBorder.Slice.Bottom),
             ImageColor3 = borderColor,
 
-            [Roact.Change.AbsoluteSize] = self.onComboBoxAbsoluteSizeChanged
+            [Roact.Change.AbsoluteSize] = self.onComboBoxAbsoluteSizeChanged,
+            [Roact.Change.AbsolutePosition] = self.onComboBoxAbsolutePositionChanged
         },
 
         comboBoxBackground = {
@@ -214,8 +235,25 @@ function ComboBox:render()
         }
     }
 
+    local optionsContent = nil
+    if self.state.isListOpen then
+        -- Calculate the highest Z-Index
+        local highestZIndex = 0
+        for _, child in ipairs(self.props.dockWidget:GetChildren()) do
+            if child:IsA("GuiObject") and child.ZIndex > highestZIndex then
+                highestZIndex = child.ZIndex
+            end
+        end
+
+        props.optionsList.zIndex = highestZIndex + 1
+        optionsContent = e(Roact.Portal, { target = self.props.dockWidget }, {
+            OptionsList = e(OptionsList, props.optionsList)
+        })
+    end
+
     return Roact.createFragment({
-        Options = e(OptionsList, props.optionsList),
+        Options = optionsContent,
+        
         ComboBoxBorder = e("ImageLabel", props.comboBoxBorder, {
             ComboBoxBackground = e("ImageLabel", props.comboBoxBackground, {
                 Padding = e("UIPadding", {
@@ -255,11 +293,22 @@ function ComboBox:render()
     })
 end
 
-function ComboBox:willUpdate(nextProps)
+function ComboBox:willUpdate(nextProps, nextState)
+    -- Not sure if this is the right way to do this? Maybe I need to use getDerivedStateFromProps?
     if nextProps.disabled and nextProps.disabled ~= self.props.disabled then
-        self.updateIsListOpen(false)
+        nextState.isListOpen = false
         self.updateIsDownArrowHovered(false)
     end
 end
 
-return ComboBox
+local function ComboBoxWithDockWidgetContext(props)
+    return e(StudioDockWidgetGuiContext.Consumer, {
+        render = function(dockWidget)
+            return e(ComboBox, Dictionary.merge(props, {
+                dockWidget = dockWidget
+            }))
+        end
+    })
+end
+
+return ComboBoxWithDockWidgetContext

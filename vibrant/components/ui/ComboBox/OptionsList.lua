@@ -81,13 +81,17 @@ function ComboBoxOptionsList:render()
         optionsList = {
             BackgroundColor3 = self.props.backgroundColor,
             BorderSizePixel = 0,
-            Position = UDim2.new(0, 0, 1, 0),
-            Size = UDim2.new(1, 0, math.clamp(#self.props.options, 1, 8)),
+            Position = self.props.position,
             Visible = self.props.visible,
             ScrollingDirection = Enum.ScrollingDirection.Y,
             ScrollBarImageColor3 = self.props.scrollBarColor,
             VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
-            CanvasSize = UDim2.new(0, 0, 0, 0)
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            ZIndex = self.props.zIndex,
+
+            Size = self.props.size:map(function(absoluteSize)
+                return UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y *  math.clamp(#self.props.options, 1, 8))
+            end)
         },
 
         optionContainer = {
@@ -95,8 +99,8 @@ function ComboBoxOptionsList:render()
             BorderSizePixel = 0,
             BackgroundTransparency = 1,
 
-            Size = self.props.comboBoxSizeBinding:map(function(comboBoxHeight)
-                return UDim2.new(1, 0, 0, comboBoxHeight)
+            Size = self.props.size:map(function(absoluteSize)
+                return UDim2.new(1, 0, 0, absoluteSize.Y)
             end),
 
             [Roact.Change.AbsoluteSize] = self.onOptionComponentSizeChanged,
