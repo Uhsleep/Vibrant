@@ -78,20 +78,27 @@ end
 
 function ComboBoxOptionsList:render()
     local props = {
-        optionsList = {
-            BackgroundColor3 = self.props.backgroundColor,
+        imageButtonInputSink = {
+            BackgroundTransparency = 1,
             BorderSizePixel = 0,
             Position = self.props.position,
-            Visible = self.props.visible,
-            ScrollingDirection = Enum.ScrollingDirection.Y,
-            ScrollBarImageColor3 = self.props.scrollBarColor,
-            VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
-            CanvasSize = UDim2.new(0, 0, 0, 0),
+            ImageTransparency = 1,
             ZIndex = self.props.zIndex,
 
             Size = self.props.size:map(function(absoluteSize)
                 return UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y *  math.clamp(#self.props.options, 1, 8))
             end)
+        },
+
+        optionsList = {
+            BackgroundColor3 = self.props.backgroundColor,
+            BorderSizePixel = 0,
+            Size = UDim2.new(1, 0, 1, 0),
+            Visible = self.props.visible,
+            ScrollingDirection = Enum.ScrollingDirection.Y,
+            ScrollBarImageColor3 = self.props.scrollBarColor,
+            VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
         },
 
         optionContainer = {
@@ -153,7 +160,11 @@ function ComboBoxOptionsList:render()
         children[containerName] = optionContainer
     end
 
-    return e("ScrollingFrame", props.optionsList, children)
+    -- Rendering an image (or text) button makes it so inputs don't leak through the drop down list components 
+    -- underneath it. Frames alone don't seem to block inputs from going to components underneath them
+    return e("ImageButton", props.imageButtonInputSink, {
+        OptionsList = e("ScrollingFrame", props.optionsList, children)
+    })
 end
 
 return ComboBoxOptionsList
