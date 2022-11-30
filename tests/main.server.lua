@@ -1,19 +1,12 @@
 local RunService = game:GetService("RunService")
 
-local Plugin = require(script.Parent.plugin)
+local App = require(script.Parent.app)
+local Plugin = require(script.Parent.dependencies.vibrant.Plugin)
 
 if plugin then
     if not RunService:IsEdit() then
         return
     end
 
-    plugin.Unloading:Connect(function()
-        Plugin:OnUnloading(plugin)
-    end)
-
-    plugin.Deactivation:Connect(function()
-       Plugin:OnDeactivation(plugin)
-    end)
-
-    Plugin:Init(plugin)
+    Plugin:Init(plugin, "Vibrant Demo Plugin", App)
 end
