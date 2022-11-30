@@ -46,6 +46,7 @@ function ComboBox:init()
     self.comboBoxPositionBinding, self.updateComboBoxPosition = Roact.createBinding(Vector2.new())
     self.comboBoxSizeBinding, self.updateComboBoxSize = Roact.createBinding(Vector2.new())
     self.isDownArrowHoveredBinding, self.updateIsDownArrowHovered = Roact.createBinding(false)
+    self.preventListOpening = false
 
     self.onComboBoxAbsoluteSizeChanged = function(comboBox)
         local padding = comboBox.Padding
@@ -84,6 +85,12 @@ function ComboBox:init()
     end
 
     self.onDownArrowContainerMouseClick = function()
+        -- The input capture frame captured the mouse down input and actually closed the options list
+        -- so we need to prevent the click event on this button from immediately re-opening the list
+        if self.preventListOpening then
+            return
+        end
+
         if not self.props.disabled then
             self:setState({
                 isListOpen = not self.state.isListOpen
@@ -98,6 +105,20 @@ function ComboBox:init()
 
         if type(self.props.onOptionSelected) == "function" then
             self.props.onOptionSelected(option, index)
+        end
+    end
+
+    self.onInputCaptureFrameInputBegan = function(_, inputObject)
+        if inputObject.UserInputType == Enum.UserInputType.MouseButton1 or inputObject.UserInputType == Enum.UserInputType.MouseButton2 then
+            -- Prevent the list from opening back up right away if the user hit the drop down arrow
+            self.preventListOpening = true
+            task.delay(0.1, function()
+                self.preventListOpening = false
+            end)
+
+            self:setState({
+                isListOpen = false
+            })
         end
     end
 
@@ -244,9 +265,18 @@ function ComboBox:render()
             end
         end
 
-        props.optionsList.zIndex = highestZIndex + 1
+        props.optionsList.zIndex = highestZIndex + 2 -- The options list needs to be 1 higher than the input capture frame
         optionsContent = e(Roact.Portal, { target = self.props.dockWidget }, {
-            OptionsList = e(OptionsList, props.optionsList)
+            OptionsList = e(OptionsList, props.optionsList),
+            InputCaptureFrame = e("Frame", {
+                Active = true,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 1, 0),
+                ZIndex = props.optionsList.zIndex - 1, -- We want to render underneath the OptionsList
+
+                -- Events
+                [Roact.Event.InputBegan] = self.onInputCaptureFrameInputBegan
+            })
         })
     end
 
