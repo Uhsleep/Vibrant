@@ -37,7 +37,6 @@ function TextArea:init()
     self.canvasPositionBinding, self.updateCanvasPosition = Roact.createBinding(0)
     self.canvasHeightBinding, self.updateCanvasHeight = Roact.createBinding(0)
     self.isFocusedBinding, self.updateIsFocused = Roact.createBinding(false)
-    self.textAreaRef = Roact.createRef()
 
     self.onFocusedGained = function()
         if not self.props.disabled then
@@ -139,12 +138,10 @@ function TextArea:init()
     end
 
     self.onTextAreaSizeChanged = function(textArea)
-        print("TextArea size changed")
         self:UpdateCanvasHeight(textArea)
     end
 
     self.onTextFontChanged = function(textArea)
-        print("Text font changed")
         self:UpdateCanvasHeight(textArea)
     end
 
@@ -162,11 +159,10 @@ function TextArea:render()
         },
 
         textAreaBorder = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Image = TextAreaBorder.Image,
+            Thickness = 2,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 
-            ImageColor3 = self.isFocusedBinding:map(function(isFocused)
+            Color = self.isFocusedBinding:map(function(isFocused)
                 if self.props.hasError then
                     return self.props.errorBorderColor
                 end
@@ -176,22 +172,12 @@ function TextArea:render()
                 end
 
                 return isFocused and self.props.focusedBorderColor or self.props.borderColor
-            end),
-
-            LayoutOrder = 0,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(TextAreaBorder.Slice.Left, TextAreaBorder.Slice.Top, TextAreaBorder.Slice.Right, TextAreaBorder.Slice.Bottom),
-            Size = UDim2.new(1, 0, 0.72, 0),
+            end)
         },
 
         textAreaBackground = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Image = TextAreaBackground.Image,
-            ImageColor3 = self.props.backgroundColor,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(TextAreaBackground.Slice.Left, TextAreaBackground.Slice.Top, TextAreaBackground.Slice.Right, TextAreaBackground.Slice.Bottom),
-            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = self.props.backgroundColor,
+            Size = UDim2.new(1, 0, 0.72, 0)
         },
 
         textAreaScrollingFrame = {
@@ -235,8 +221,6 @@ function TextArea:render()
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Top,
 
-            [Roact.Ref] = self.textAreaRef,
-
             -- Events
             [Roact.Change.AbsoluteSize] = self.onTextAreaSizeChanged,
             [Roact.Change.CursorPosition] = self.onCursorPositionChanged,
@@ -262,8 +246,6 @@ function TextArea:render()
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Top,
 
-            [Roact.Ref] = self.textAreaRef,
-
             -- Events
             [Roact.Change.AbsoluteSize] = self.onTextAreaSizeChanged
         },
@@ -287,9 +269,19 @@ function TextArea:render()
     -- Replacing a textArea with a TextLabel when disabled emulates the removal of
     -- input events (mouse icon changing, being able to click in the text box, etc.)
     -- Roblox doesn't have a way of directly disabling a textArea, so this is our next best thing
-    local textContent = e("TextBox", props.textArea)
+    local textContent = e("TextBox", props.textArea, {
+        -- Allows the carat blinker to show up when the text box is empty
+        Padding = e("UIPadding", {
+            PaddingLeft = UDim.new(0, 1)
+        }),
+    })
+    
     if self.props.disabled then
-        textContent = e("TextLabel", props.disabledTextLabel)
+        textContent = e("TextLabel", props.disabledTextLabel, {
+            Padding = e("UIPadding", {
+                PaddingLeft = UDim.new(0, 1)
+            })
+        })
     end
 
     return e("Frame", props.textAreaContainer, {
@@ -301,23 +293,18 @@ function TextArea:render()
             Padding = UDim.new(0, 3)
         }),
 
-        TextAreaBorder = e("ImageLabel", props.textAreaBorder, {
-            TextAreaBackground = e("ImageLabel", props.textAreaBackground, {
-                Padding = e("UIPadding", {
-                    PaddingBottom = UDim.new(0, 10),
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 10)
-                }),
+        TextAreaBackground = e("Frame", props.textAreaBackground, {
+            UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+            Border = e("UIStroke", props.textAreaBorder),
+            Padding = e("UIPadding", {
+                PaddingBottom = UDim.new(0, 6),
+                PaddingLeft = UDim.new(0, 6),
+                PaddingRight = UDim.new(0, 6),
+                PaddingTop = UDim.new(0, 6)
+            }),
 
-                TextAreaScrollingFrame = e("ScrollingFrame", props.textAreaScrollingFrame, {
-                    -- Allows the carat blinker to show up when the text box is empty
-                    Padding = e("UIPadding", {
-                        PaddingLeft = UDim.new(0, 1)
-                    }),
-
-                    TextArea = textContent
-                })
+            TextAreaScrollingFrame = e("ScrollingFrame", props.textAreaScrollingFrame, {
+                TextArea = textContent
             })
         }),
 

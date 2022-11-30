@@ -4,10 +4,15 @@ local Dependencies = require(Vibrant.DependencyPaths)
 local Assets = require(Vibrant.Assets)
 local Roact = require(Dependencies.Roact)
 
-local CheckBoxBackground = Assets.CheckBoxBackground
-local CheckBoxBorder = Assets.TextBoxBorder
-
 local e = Roact.createElement
+-----------------------------------------------------------------------------
+
+local HoveredColorDelta = Vector3.new(0.05, 0.05, 0.05)
+
+local function applyColorDelta(color, delta)
+    return Color3.new(color.R + delta.X, color.G + delta.Y, color.B + delta.Z)
+end
+
 -----------------------------------------------------------------------------
 
 local CheckBox = Roact.PureComponent:extend("CheckBox")
@@ -26,19 +31,19 @@ CheckBox.defaultProps = {
 function CheckBox:init()
     self.isHoveredBinding, self.updateIsHovered = Roact.createBinding(false)
 
-    self.onCheckBoxMouseEnter = function(checkBoxBackground, x, y)
+    self.onCheckBoxMouseEnter = function()
         if not self.props.disabled then
             self.updateIsHovered(true)
         end
     end
 
-    self.onCheckBoxMouseLeave = function(checkBoxBackground, x, y)
+    self.onCheckBoxMouseLeave = function()
         if not self.props.disabled then
             self.updateIsHovered(false)
         end
     end
 
-    self.onCheckBoxClick = function(checkBoxBackground, x, y)
+    self.onCheckBoxClick = function()
         if not self.props.disabled and type(self.props.onValueChanged) == "function" then
             self.props.onValueChanged(not self.props.checked)
         end
@@ -47,27 +52,32 @@ end
 
 function CheckBox:render()
     local props = {
-        border ={
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Size = UDim2.new(1, 0, 1, 0),
-            Image = CheckBoxBorder.Image,
-            ImageColor3 = self.props.disabled and Color3.fromRGB(125, 125, 125) or self.props.borderColor,
-            ImageTransparency = self.props.disabled and 0.5 or 0,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(CheckBoxBorder.Slice.Left, CheckBoxBorder.Slice.Top, CheckBoxBorder.Slice.Right, CheckBoxBorder.Slice.Bottom)
+        checkBoxBorder ={
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            Color = self.props.disabled and Color3.fromRGB(125, 125, 125) or self.props.borderColor,
+            Thickness = 2,
+            Transparency = self.props.disabled and 0.5 or 0,
         },
 
-        background = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
+        checkBoxBackground = {
+            AutoButtonColor = false,
             Size = UDim2.new(1, 0, 1, 0),
-            Image = CheckBoxBackground.Image,
-            ImageColor3 = self.props.disabled and Color3.fromRGB(125, 125, 125) or self.props.checkedBackgroundColor,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(CheckBoxBackground.Slice.Left, CheckBoxBackground.Slice.Top, CheckBoxBackground.Slice.Right, CheckBoxBackground.Slice.Bottom),
-
-            ImageTransparency = self.isHoveredBinding:map(function(isHovered)
+            Text = "",
+            TextTransparency = 1,
+            
+            BackgroundColor3 = self.isHoveredBinding:map(function(isHovered)
+                if self.props.disabled then
+                    return Color3.fromRGB(125, 125, 125)
+                end
+                
+                if isHovered then
+                    return applyColorDelta(self.props.checkedBackgroundColor, HoveredColorDelta)
+                end
+                
+                return self.props.checkedBackgroundColor
+            end),
+            
+            BackgroundTransparency = self.isHoveredBinding:map(function(isHovered)
                 if self.props.disabled then
                     return 0.5
                 end
@@ -86,35 +96,27 @@ function CheckBox:render()
         },
 
         checkMark = {
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
             BorderSizePixel = 0,
+            BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
             Image = Assets.CheckMark,
             ImageColor3 = self.props.disabled and Color3.fromRGB(170, 170, 170) or self.props.checkMarkColor,
             ImageTransparency = self.props.checked and (self.props.disabled and 0.5 or 0) or 1,
             ScaleType = Enum.ScaleType.Fit,
-
-            BackgroundTransparency = self.isHoveredBinding:map(function(isHovered)
-                if not self.props.checked or self.props.disabled then
-                    return 1
-                end
-
-                return isHovered and 0.9 or 1
-            end),
         }
     }
 
-    return e("ImageLabel", props.border, {
-        CheckBoxBackground = e("ImageButton", props.background, {
-            Padding = e("UIPadding", {
-                PaddingBottom = UDim.new(0, 3),
-                PaddingLeft = UDim.new(0, 3),
-                PaddingRight = UDim.new(0, 3),
-                PaddingTop = UDim.new(0, 3),
-            }),
+    return e("TextButton", props.checkBoxBackground, {
+        UICorner = e("UICorner", { CornerRadius = UDim.new(0, 2) }),
+        Border = e("UIStroke", props.checkBoxBorder),
+        Padding = e("UIPadding", {
+            PaddingBottom = UDim.new(0, 3),
+            PaddingLeft = UDim.new(0, 3),
+            PaddingRight = UDim.new(0, 3),
+            PaddingTop = UDim.new(0, 3),
+        }),
 
-            CheckMark = e("ImageLabel", props.checkMark)
-        })
+        CheckMark = e("ImageLabel", props.checkMark)
     })
 end
 

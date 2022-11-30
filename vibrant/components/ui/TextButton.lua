@@ -1,106 +1,128 @@
 local Vibrant = script:FindFirstAncestor("vibrant")
 local Dependencies = require(Vibrant.DependencyPaths)
-
-local Assets = require(Vibrant.Assets)
 local Roact = require(Dependencies.Roact)
-
-local ButtonBackground = Assets.ButtonBackground
-local ButtonBorder = Assets.ButtonBorder
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
 
-local states = {
-    inactive = 0,
-    active = 1,
-    pressed = 2
-}
+local HoveredColorDelta = Vector3.new(0.05, 0.05, 0.05)
+local PressedColorDelta = Vector3.new(-0.15, -0.15, -0.15)
+
+local function applyColorDelta(color, delta)
+    return Color3.new(color.R + delta.X, color.G + delta.Y, color.B + delta.Z)
+end
+
+-----------------------------------------------------------------------------
 
 local TextButton = Roact.Component:extend("TextButton")
 TextButton.defaultProps = {
-    color = Color3.fromRGB(200, 200, 200),
+    -- Behavior
     disabled = false,
     text = "Button Text",
-    textColor = Color3.fromRGB(0, 0, 0),
-    textFont = Enum.Font.Nunito,
-    style = "Border",
-
-    -- Events
+    
     onEnter = nil,
     onLeave = nil,
     onButtonDown = nil,
     onButtonUp = nil,
     onClick = nil,
+    
+    -- Appearance
+    color = Color3.fromRGB(200, 200, 200),
+    textColor = Color3.fromRGB(0, 0, 0),
+    textFont = Enum.Font.Nunito,
+    style = "Border",
 }
 
 function TextButton:init()
-    self.onMouseEnter = function()
-        self:setState({
-            buttonState = states.active
-        })
+    self.isHoveredBinding, self.updateIsHovered = Roact.createBinding(false)
+    self.isPressedDownBinding, self.updateIsPressedDown = Roact.createBinding(false)
 
-        if not self.props.disabled and type(self.props.onEnter) == "function" then
+    self.onMouseEnter = function()
+        if self.props.disabled then
+            return
+        end
+
+        self.updateIsHovered(true)
+
+        if type(self.props.onEnter) == "function" then
             self.props.onEnter()
         end
     end
 
     self.onMouseLeave = function()
-        self:setState({
-            buttonState = states.inactive
-        })
+        if self.props.disabled then
+            return
+        end
 
-        if not self.props.disabled and type(self.props.onLeave) == "function" then
+        self.updateIsHovered(false)
+        self.updateIsPressedDown(false)
+
+        if type(self.props.onLeave) == "function" then
             self.props.onLeave()
         end
     end
 
     self.onMouseDown = function()
-        self:setState({
-            buttonState = states.pressed
-        })
+        if self.props.disabled then
+            return
+        end
 
-        if not self.props.disabled and type(self.props.onButtonDown) == "function" then
+        self.updateIsPressedDown(true)
+
+        if type(self.props.onButtonDown) == "function" then
             self.props.onButtonDown()
         end
     end
 
     self.onMouseUp = function()
-        if self.state.buttonState ~= states.active then
-            self:setState({
-                buttonState = states.active
-            })
+        if self.props.disabled then
+            return
         end
 
-        if not self.props.disabled and type(self.props.onButtonUp) == "function" then
+        self.updateIsPressedDown(false)
+
+        if type(self.props.onButtonUp) == "function" then
             self.props.onButtonUp()
         end
     end
 
     self.onMouseClick = function()
-        if not self.props.disabled and type(self.props.onClick) == "function" then
+        if self.props.disabled then
+            return
+        end
+
+        if type(self.props.onClick) == "function" then
             self.props.onClick()
         end
     end
-
-    self.activeDeltaColor = Vector3.new(-0.05, -0.05, -0.05)
-    self.pressedDeltaColor = Vector3.new(-0.15, -0.15, -0.15)
-
-    self:setState({
-        buttonState = states.inactive
-    })
 end
 
 function TextButton:render()
     local props = {
-        imageButton = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Image = ButtonBorder.Image,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(ButtonBorder.Slice.Left, ButtonBorder.Slice.Top, ButtonBorder.Slice.Right, ButtonBorder.Slice.Bottom),
+        textButton = {
+            AutoButtonColor = false,
+            BackgroundTransparency = self.props.disabled and 0.2 or 0,
+            Text = "",
             Size = UDim2.new(1, 0, 1, 0),
-            ImageColor3 = self.props.color,
+            
+            BackgroundColor3 = Roact.joinBindings({ self.isHoveredBinding, self.isPressedDownBinding }):map(function(values)
+                local isHovered = values[1]
+                local isPressedDown = values[2]
 
+                -- TODO: If disabled, set color to grayish
+
+                if isPressedDown then
+                    return applyColorDelta(self.props.color, PressedColorDelta)
+                end
+                   
+                if isHovered then
+                    return applyColorDelta(self.props.color, HoveredColorDelta)
+                end
+
+                return self.props.color
+            end),
+
+            -- Events
             [Roact.Event.MouseEnter] = self.onMouseEnter,
             [Roact.Event.MouseLeave] = self.onMouseLeave,
             [Roact.Event.MouseButton1Down] = self.onMouseDown,
@@ -108,14 +130,12 @@ function TextButton:render()
             [Roact.Event.MouseButton1Click] = self.onMouseClick
         },
 
-        imageLabel = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Image = ButtonBackground.Image,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(ButtonBackground.Slice.Left, ButtonBackground.Slice.Top, ButtonBackground.Slice.Right, ButtonBackground.Slice.Bottom),
-            Size = UDim2.new(1, 0, 1, 0),
-            ImageColor3 = self.props.color
+        textButtonBorder = {
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            -- TODO: If disabled, set color to graysish
+            Color = applyColorDelta(self.props.color, PressedColorDelta),
+            Thickness = 2,
+            Transparency = self.props.disabled and 0.2 or 0
         },
 
         textContainer = {
@@ -132,41 +152,32 @@ function TextButton:render()
             Font = self.props.textFont,
             Size = UDim2.new(1, 0, 1, 0),
             Text = self.props.text,
+            TextTransparency = self.props.disabled and 0.2 or 0, 
             TextColor3 = self.props.textColor,
             TextScaled = true,
         }
     }
 
-    if self.props.disabled then
-        props.imageLabel.ImageTransparency = 0.5
-        props.imageButton.ImageTransparency = 0.5
-        props.textLabel.TextTransparency = 0.35
-    else
-        if self.state.buttonState == states.active then
-            local activeColor = Color3.new(self.props.color.R + self.activeDeltaColor.X, self.props.color.G + self.activeDeltaColor.Y, self.props.color.B + self.activeDeltaColor.Z)
-
-            props.imageLabel.ImageColor3 = activeColor
-            props.imageButton.ImageColor3 = activeColor
-        elseif self.state.buttonState == states.pressed then
-            local pressedColor = Color3.new(self.props.color.R + self.pressedDeltaColor.X, self.props.color.G + self.pressedDeltaColor.Y, self.props.color.B + self.pressedDeltaColor.Z)
-
-            props.imageLabel.ImageColor3 = pressedColor
-            props.imageButton.ImageColor3 = pressedColor
-            props.imageButton.ImageTransparency = 1
-        end
+    local borderStroke = nil
+    if self.props.style ~= "Borderless" then
+        borderStroke = e("UIStroke", props.textButtonBorder)
     end
 
-    if self.props.style == "Borderless" then
-        props.imageButton.ImageTransparency = 1
-    end
+    return e("TextButton", props.textButton, {
+        UICorner =e ("UICorner", { CornerRadius = UDim.new(0.1, 0) }),
+        BorderStroke = borderStroke,
 
-    return e("ImageButton", props.imageButton, {
-        ButtonBackground = e("ImageLabel", props.imageLabel, {
-            TextContainer = e("Frame", props.textContainer, {
-                ButtonText  = e("TextLabel", props.textLabel)
-            })
+        TextContainer = e("Frame", props.textContainer, {
+            ButtonText  = e("TextLabel", props.textLabel)
         })
     })
+end
+
+function TextButton:willUpdate(nextProps)
+    if nextProps.disabled then
+        self.updateIsHovered(false)
+        self.updateIsPressedDown(false)
+    end
 end
 
 return TextButton

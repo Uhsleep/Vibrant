@@ -2,12 +2,7 @@ local TextService = game:GetService("TextService")
 
 local Vibrant = script:FindFirstAncestor("vibrant")
 local Dependencies = require(Vibrant.DependencyPaths)
-
-local Assets = require(Vibrant.Assets)
 local Roact = require(Dependencies.Roact)
-
-local TextBoxBackground = Assets.TextBoxBackground
-local TextBoxBorder = Assets.TextBoxBorder
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -40,7 +35,7 @@ TextBox.defaultProps = {
 
 function TextBox:init()
     self.canvasPositionBinding, self.updateCanvasPosition = Roact.createBinding(0)
-    self.isFocused, self.updateIsFocused = Roact.createBinding(false)
+    self.isFocusedBinding, self.updateIsFocused = Roact.createBinding(false)
 
     self.onFocusedGained = function()
         if not self.props.disabled then
@@ -55,6 +50,9 @@ function TextBox:init()
     end
 
     self.onTextChanged = function(textBox)
+        -- Remove all newline characters since this component should be one-line only
+        textBox.Text = textBox.Text:gsub("[\r\n]", "")
+
         -- Roblox does not have a direct way of setting a max character limit on textboxes so we have to do it ourselves
         if textBox.Text:len() > self.props.maxLength then
             textBox.Text = textBox.Text:sub(1, self.props.maxLength)
@@ -75,31 +73,27 @@ function TextBox:init()
             end
             
             local textContainer = textBox.Parent
-            local scrollBufferWidth = 10 -- How far from the textbox edges should we start scrolling the canvas
-
-            local startPosition = textContainer.CanvasPosition.X + textContainer.Padding.PaddingLeft.Offset
-            local startScrollPosition = startPosition + scrollBufferWidth
-            
-            local subStr = textBox.Text:sub(1, textBox.CursorPosition)
+            local subStr = textBox.Text:sub(1, textBox.CursorPosition - 1)
             local textSize = TextService:GetTextSize(subStr, textBox.TextSize, textBox.Font, Vector2.new(math.huge, textContainer.AbsoluteSize.Y))
-            local cursorPositionPixels = textSize.X
             
+            local scrollBufferWidth = 15 -- How far from the textbox edges should we start scrolling the canvas
+            local startPosition = textContainer.CanvasPosition.X
+            local cursorPosition = textSize.X
             local endPosition = startPosition + textContainer.AbsoluteWindowSize.X
-            local endScrollPosition = endPosition - scrollBufferWidth
-            
-            if cursorPositionPixels > endScrollPosition then
-                local d = cursorPositionPixels - endScrollPosition
-                self.updateCanvasPosition(self.canvasPositionBinding:getValue() + d)
-            elseif cursorPositionPixels < startScrollPosition then
-                local d = startScrollPosition - cursorPositionPixels
-                self.updateCanvasPosition(self.canvasPositionBinding:getValue() - d) 
+
+            if cursorPosition > endPosition - scrollBufferWidth then
+                local d = cursorPosition - endPosition + scrollBufferWidth
+                self.updateCanvasPosition(math.clamp(self.canvasPositionBinding:getValue() + d, 0, textContainer.AbsoluteCanvasSize.X - textContainer.AbsoluteWindowSize.X))
+            elseif cursorPosition < startPosition + scrollBufferWidth then
+                local d = startPosition - cursorPosition + scrollBufferWidth
+                self.updateCanvasPosition(math.clamp(self.canvasPositionBinding:getValue() - d, 0, textContainer.AbsoluteCanvasSize.X - textContainer.AbsoluteWindowSize.X)) 
             end
         end)
     end
 
     self.onSizeChanged = function(textBoxContainer)
         -- Find the largest text size that fits within the height of the textbox and error label. Very hacky
-        local textBox = textBoxContainer.TextBoxBorder.TextBoxBackground.TextBoxScrollingFrame.TextBox
+        local textBox = textBoxContainer.TextBackground.TextBoxScrollingFrame.TextBox
         for textSize = 1, 100 do
             textBox.TextSize = textSize
 
@@ -131,12 +125,17 @@ function TextBox:render()
             [Roact.Change.AbsoluteSize] = self.onSizeChanged,
         },
 
-        textBoxBorder = {
-            BackgroundTransparency = 1,
+        textBoxBackground = {
+            BackgroundColor3 = self.props.backgroundColor,
             BorderSizePixel = 0,
-            Image = TextBoxBorder.Image,
+            Size = UDim2.new(1, 0, 0.72, 0)
+        },
 
-            ImageColor3 = self.isFocused:map(function(isFocused)
+        textBoxBorder = {
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            Thickness = 2,
+
+            Color = self.isFocusedBinding:map(function(isFocused)
                 if self.props.hasError then
                     return self.props.errorBorderColor
                 end
@@ -147,21 +146,6 @@ function TextBox:render()
 
                 return isFocused and self.props.focusedBorderColor or self.props.borderColor
             end),
-
-            LayoutOrder = 0,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(TextBoxBorder.Slice.Left, TextBoxBorder.Slice.Top, TextBoxBorder.Slice.Right, TextBoxBorder.Slice.Bottom),
-            Size = UDim2.new(1, 0, 0.72, 0),
-        },
-
-        textBoxBackground = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Image = TextBoxBackground.Image,
-            ImageColor3 = self.props.backgroundColor,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(TextBoxBackground.Slice.Left, TextBoxBackground.Slice.Top, TextBoxBackground.Slice.Right, TextBoxBackground.Slice.Bottom),
-            Size = UDim2.new(1, 0, 1, 0),
         },
 
         textBoxScrollingFrame = {
@@ -178,9 +162,10 @@ function TextBox:render()
             MidImage = "",
             Position = UDim2.new(0.5, 0, 0.5, 0),
             ScrollBarThickness = 0,
-            Size = UDim2.new(1, 0, 0.5, 0),
+            Size = UDim2.new(1, 0, 1, 0),
             TopImage = "",
         },
+
 
         textBox = {
             BackgroundTransparency = 1,
@@ -234,7 +219,13 @@ function TextBox:render()
     -- Replacing a TextBox with a TextLabel when disabled emulates the removal of
     -- input events (mouse icon changing, being able to click in the text box, etc.)
     -- Roblox doesn't have a way of directly disabling a TextBox, so this is our next best thing
-    local textContent = e("TextBox", props.textBox)
+    local textContent = e("TextBox", props.textBox, {
+        -- Allows the carat blinker to show up when the text box is empty
+        Padding = e("UIPadding", {
+            PaddingLeft = UDim.new(0, 1),
+        }),
+    })
+
     if self.props.disabled then
         textContent = e("TextLabel", props.disabledTextLabel)
     end
@@ -245,25 +236,21 @@ function TextBox:render()
             HorizontalAlignment = Enum.HorizontalAlignment.Center,
             SortOrder = Enum.SortOrder.LayoutOrder,
             VerticalAlignment = Enum.VerticalAlignment.Top,
-            Padding = UDim.new(0, 3)
+            Padding = UDim.new(0, 5)
         }),
 
-        TextBoxBorder = e("ImageLabel", props.textBoxBorder, {
-            TextBoxBackground = e("ImageLabel", props.textBoxBackground, {
-                Padding = e("UIPadding", {
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 3) -- The TextBox text looks off-center towards the top without this
-                }),
+        TextBackground = e("Frame", props.textBoxBackground, {
+            UICorner = e("UICorner", { CornerRadius = UDim.new(0.1, 0) }),
+            BorderStroke = e("UIStroke", props.textBoxBorder),
+            Padding = e("UIPadding", {
+                PaddingBottom = UDim.new(0.25, -2),
+                PaddingLeft = UDim.new(0, 5),
+                PaddingTop = UDim.new(0.25, 2),
+                PaddingRight = UDim.new(0, 5)
+            }),
 
-                TextBoxScrollingFrame = e("ScrollingFrame", props.textBoxScrollingFrame, {
-                    -- Allows the carat blinker to show up when the text box is empty
-                    Padding = e("UIPadding", {
-                        PaddingLeft = UDim.new(0, 1)
-                    }),
-
-                    TextBox = textContent
-                })
+            TextBoxScrollingFrame = e("ScrollingFrame", props.textBoxScrollingFrame, {
+                TextBox = textContent
             })
         }),
 
