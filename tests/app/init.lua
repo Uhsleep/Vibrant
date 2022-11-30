@@ -1,6 +1,5 @@
-local Root = script.Parent.Parent
+local Root = script.Parent
 local Roact = require(Root.dependencies.Roact)
-local StudioPluginContext = require(Root.dependencies.vibrant.components.studio.StudioPluginContext)
 local StudioToolbar = require(Root.dependencies.vibrant.components.studio.StudioToolbar)
 local StudioToolbarButton = require(Root.dependencies.vibrant.components.studio.StudioToolbarButton)
 local StudioDockWidgetGui = require(Root.dependencies.vibrant.components.studio.StudioDockWidgetGui)
@@ -36,12 +35,8 @@ end
 
 function App:render()
     local props = {
-        pluginContext = {
-            value = self.props.pluginModule
-        },
-
         toolbar = {
-            name = self.props.pluginModule.name
+            name = self.props.pluginName
         },
 
         button1 = {
@@ -52,7 +47,7 @@ function App:render()
         }
     }
 
-    return e(StudioPluginContext.Provider, props.pluginContext, {
+    return Roact.createFragment({
         ToolBar = e(StudioToolbar, props.toolbar, {
             Button1 = e(StudioToolbarButton, props.button1)
         }),

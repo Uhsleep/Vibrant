@@ -64,9 +64,9 @@ end
 
 function StudioDockWidgetGuiWrapper(props)
     return e(StudioPluginContext.Consumer, {
-        render = function(pluginModule)
+        render = function(plugin)
             return e(StudioDockWidgetGui, Dictionary.merge(props, {
-                plugin = pluginModule.plugin
+                plugin = plugin
             }))
         end
     })

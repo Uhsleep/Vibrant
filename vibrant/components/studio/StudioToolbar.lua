@@ -30,9 +30,9 @@ end
 
 function StudioToolbarWrapper(props)
     return e(StudioPluginContext.Consumer, {
-        render = function(pluginModule)
+        render = function(plugin)
             return e(StudioToolbar, Dictionary.merge(props, {
-                plugin = pluginModule.plugin
+                plugin = plugin
             }))
         end
     })
