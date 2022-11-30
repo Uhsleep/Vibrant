@@ -4,9 +4,6 @@ local Assets = require(Vibrant.Assets)
 local Dictionary = require(Vibrant.utils.Dictionary)
 local Roact = require(Dependencies.Roact)
 
-local ComboBoxBorder = Assets.ComboBoxBorder
-local ComboBoxBackground = Assets.ComboBoxBackground
-
 local StudioDockWidgetGuiContext = require(Vibrant.components.studio.StudioDockWidgetGuiContext)
 local OptionsList = require(script.OptionsList)
 
@@ -50,16 +47,23 @@ function ComboBox:init()
     self.comboBoxSizeBinding, self.updateComboBoxSize = Roact.createBinding(Vector2.new())
     self.isDownArrowHoveredBinding, self.updateIsDownArrowHovered = Roact.createBinding(false)
 
-    self.onComboBoxAbsoluteSizeChanged = function(comboBoxBorder)
-        self.updateComboBoxSize(comboBoxBorder.AbsoluteSize)
+    self.onComboBoxAbsoluteSizeChanged = function(comboBox)
+        local padding = comboBox.Padding
+        local paddingLeft = padding.PaddingLeft.Offset
+        local paddingRight = padding.PaddingRight.Offset
+        self.updateComboBoxSize(Vector2.new(comboBox.AbsoluteSize.X - paddingLeft - paddingRight, comboBox.AbsoluteSize.Y))
 
-        local downArrowContainer = comboBoxBorder.ComboBoxBackground.DownArrowContainer
-        local textContainer = comboBoxBorder.ComboBoxBackground.TextContainer
+        -- The down arrow container will always maintain an aspect ratio of 1, so we need to offset
+        -- the text container by the down arrow container width so they correctly line up side by side
+        local downArrowContainer = comboBox.ComboBoxBackground.DownArrowContainer
+        local textContainer = comboBox.ComboBoxBackground.TextContainer
         textContainer.Size = UDim2.new(UDim.new(1, -downArrowContainer.AbsoluteSize.X), textContainer.Size.Y)
     end
 
-    self.onComboBoxAbsolutePositionChanged = function(comboBoxBorder)
-        self.updateComboBoxPosition(comboBoxBorder.AbsolutePosition)
+    self.onComboBoxAbsolutePositionChanged = function(comboBox)
+        local padding = comboBox.Padding
+        local paddingLeft = padding.PaddingLeft.Offset
+        self.updateComboBoxPosition(Vector2.new(comboBox.AbsolutePosition.X + paddingLeft, comboBox.AbsolutePosition.Y))
     end
 
     self.onTextContainerSizeChanged = function(textContainer)
@@ -131,7 +135,7 @@ function ComboBox:render()
             break
         end
     end
-
+    
     local borderColor = self.props.hasError and self.props.errorBorderColor or self.props.borderColor
     if self.props.disabled then
         borderColor = self.props.disabledColor
@@ -155,29 +159,25 @@ function ComboBox:render()
             end)
         },
 
-        comboBoxBorder = {
+        canvasGroup = {
             BackgroundTransparency = 1,
-            BorderSizePixel = 0,
+            GroupTransparency = self.props.disabled and 0.2 or 0,
             Size = UDim2.new(1, 0, 1, 0),
-            Image = ComboBoxBorder.Image,
-            ImageTransparency = self.props.disabled and 0.5 or 0,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(ComboBoxBorder.Slice.Left, ComboBoxBorder.Slice.Top, ComboBoxBorder.Slice.Right, ComboBoxBorder.Slice.Bottom),
-            ImageColor3 = borderColor,
 
-            [Roact.Change.AbsoluteSize] = self.onComboBoxAbsoluteSizeChanged,
-            [Roact.Change.AbsolutePosition] = self.onComboBoxAbsolutePositionChanged
+             -- Events
+             [Roact.Change.AbsoluteSize] = self.onComboBoxAbsoluteSizeChanged,
+             [Roact.Change.AbsolutePosition] = self.onComboBoxAbsolutePositionChanged
+        },
+
+        comboBoxBorder = {
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            Color = borderColor,
+            Thickness = 2,
         },
 
         comboBoxBackground = {
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
             Size = UDim2.new(1, 0, 1, 0),
-            Image = ComboBoxBackground.Image,
-            ImageTransparency = self.props.disabled and 0.5 or 0,
-            ImageColor3 = self.props.disabled and self.props.disabledColor or self.props.backgroundColor,
-            ScaleType = Enum.ScaleType.Slice,
-            SliceCenter = Rect.new(ComboBoxBackground.Slice.Left, ComboBoxBackground.Slice.Top, ComboBoxBackground.Slice.Right, ComboBoxBackground.Slice.Bottom)
+            BackgroundColor3 = self.props.disabled and self.props.disabledColor or self.props.backgroundColor
         },
 
         textContainer = {
@@ -194,7 +194,7 @@ function ComboBox:render()
             BorderSizePixel = 0,
             Size = UDim2.new(1, 0, 1, 0),
             Text = foundOption and self.props.selectedOption or self.props.placeHolderText,
-            TextTransparency = foundOption and 0 or 0.5,
+            TextTransparency = foundOption and 0 or (self.props.disabled and 0 or 0.5),
             TextColor3 = self.props.textColor,
             TextScaled = false,
             TextTruncate = Enum.TextTruncate.AtEnd,
@@ -223,7 +223,6 @@ function ComboBox:render()
             Position = UDim2.new(0.5, 0, 0.5, 0),
             Size = UDim2.new(1, 0, 1, 0),
             Image = Assets.ComboBoxDownArrow,
-            ImageTransparency = self.props.disabled and 0.5 or 0,
             ImageColor3 = self.isDownArrowHoveredBinding:map(function(isDownArrowHovered)
                 if not isDownArrowHovered then
                     return self.props.borderColor
@@ -254,8 +253,17 @@ function ComboBox:render()
     return Roact.createFragment({
         Options = optionsContent,
         
-        ComboBoxBorder = e("ImageLabel", props.comboBoxBorder, {
-            ComboBoxBackground = e("ImageLabel", props.comboBoxBackground, {
+        ComboBox = e("CanvasGroup", props.canvasGroup, {
+            Padding = e("UIPadding", {
+                PaddingBottom = UDim.new(0, 2),
+                PaddingLeft = UDim.new(0, 2),
+                PaddingRight = UDim.new(0, 2),
+                PaddingTop = UDim.new(0, 2)
+            }),
+
+            ComboBoxBackground = e("Frame", props.comboBoxBackground, {
+                UICorner = e("UICorner", { CornerRadius = UDim.new(0.1, 0) }),
+                Border = e("UIStroke", props.comboBoxBorder),
                 Padding = e("UIPadding", {
                     PaddingLeft = UDim.new(0, 2),
                     PaddingTop = UDim.new(0, 2),
@@ -266,9 +274,9 @@ function ComboBox:render()
                 TextContainer = e("Frame", props.textContainer, {
                     Padding = e("UIPadding", {
                         PaddingLeft = UDim.new(0, 7),
-                        PaddingTop = UDim.new(0, 5),
+                        PaddingTop = UDim.new(0, 4),
                         PaddingRight = UDim.new(0, 7),
-                        PaddingBottom = UDim.new(0, 5),
+                        PaddingBottom = UDim.new(0, 4),
                     }),
     
                     SelectedText = e("TextLabel", props.selectedText)
@@ -288,7 +296,7 @@ function ComboBox:render()
     
                     DownArrow = e("ImageLabel", props.downArrow)
                 })
-            })
+            }),
         })
     })
 end
