@@ -3,12 +3,7 @@ local TextService = game:GetService("TextService")
 
 local Vibrant = script:FindFirstAncestor("vibrant")
 local Dependencies = require(Vibrant.DependencyPaths)
-
-local Assets = require(Vibrant.Assets)
 local Roact = require(Dependencies.Roact)
-
-local TextAreaBackground = Assets.TextAreaBackground
-local TextAreaBorder = Assets.TextAreaBorder
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
