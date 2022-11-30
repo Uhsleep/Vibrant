@@ -8,24 +8,15 @@ local StudioToolbarContext = require(script.Parent.StudioToolbarContext)
 local e = Roact.createElement
 -----------------------------------------------------------------------------
 
-local defaultProps = {
+local StudioToolbarButton = Roact.Component:extend("StudioToolbarButton")
+StudioToolbarButton.defaultProps = {
     text = "Toolbar button",
     tooltipDescription = "A toolbar button used to enable/disable plugin widgets",
     icon = Assets.ToolbarButtonDefaultIcon,
     active = false
 }
 
-local function ensurePropValues(componentProps, defaultProps)
-    for key, value in pairs(defaultProps) do
-        componentProps[key] = componentProps[key] or value
-    end
-end
-
-local StudioToolbarButton = Roact.Component:extend("StudioToolbarButton")
-
 function StudioToolbarButton:init()
-    ensurePropValues(self.props, defaultProps)
-
     self.button = self.props.toolbar:CreateButton(self.props.text .. "Button", self.props.tooltipDescription, self.props.icon, self.props.text)
     self.button:SetActive(self.props.active)
     self.button.ClickableWhenViewportHidden = false
