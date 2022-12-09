@@ -121,7 +121,7 @@ function TextArea:init()
             local textContainer = textArea.Parent
 
             local minValue = 0
-            local maxValue = textArea.AbsoluteSize.Y - textContainer.AbsoluteWindowSize.Y
+            local maxValue = math.max(minValue, textArea.AbsoluteSize.Y - textContainer.AbsoluteWindowSize.Y)
             local scale = 40
 
             local currentValue = self.canvasPositionBinding:getValue()
