@@ -52,7 +52,7 @@ function TextArea:init()
             return
         end
 
-        self:UpdateCanvasHeight(textArea)
+        self:CalculateCanvasHeight(textArea)
 
         if type(self.props.onTextChanged) == "function" then
             self.props.onTextChanged(textArea.Text)
@@ -133,15 +133,15 @@ function TextArea:init()
     end
 
     self.onTextAreaSizeChanged = function(textArea)
-        self:UpdateCanvasHeight(textArea)
+        self:CalculateCanvasHeight(textArea)
     end
 
     self.onTextFontChanged = function(textArea)
-        self:UpdateCanvasHeight(textArea)
+        self:CalculateCanvasHeight(textArea)
     end
 
     self.onTextSizeChanged = function(textArea)
-        self:UpdateCanvasHeight(textArea)
+        self:CalculateCanvasHeight(textArea)
     end
 end
 
@@ -320,9 +320,7 @@ function TextArea:willUpdate(nextProps)
     end
 end
 
-function TextArea:UpdateCanvasHeight(textArea)
-    ContentProvider:PreloadAsync({ textArea.FontFace.Family })
-
+function TextArea:CalculateCanvasHeight(textArea)
     local textBoundsParams = Instance.new("GetTextBoundsParams")
     textBoundsParams.Text = textArea.Text
     textBoundsParams.Font = textArea.FontFace
