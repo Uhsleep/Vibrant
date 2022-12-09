@@ -1,4 +1,3 @@
-local ContentProvider = game:GetService("ContentProvider")
 local TextService = game:GetService("TextService")
 
 local Vibrant = script:FindFirstAncestor("vibrant")
