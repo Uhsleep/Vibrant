@@ -1,6 +1,6 @@
 local Assets = {
     ToolbarButtonDefaultIcon = "rbxassetid://1507949215",
-
+    ImageButtonDefaultImage = "rbxassetid://1507949215",
     -- ComboBoxes
     ComboBoxDownArrow = "rbxassetid://11493154762",
 
