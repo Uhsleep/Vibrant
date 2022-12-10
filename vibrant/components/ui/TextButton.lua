@@ -164,7 +164,7 @@ function TextButton:render()
     end
 
     return e("TextButton", props.textButton, {
-        UICorner =e ("UICorner", { CornerRadius = UDim.new(0.1, 0) }),
+        UICorner = e("UICorner", { CornerRadius = UDim.new(0.1, 0) }),
         BorderStroke = borderStroke,
 
         TextContainer = e("Frame", props.textContainer, {
