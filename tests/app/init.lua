@@ -11,6 +11,7 @@ local ComboBoxEntry = require(script.list_entries.ComboBoxEntry)
 local NumericStepperEntry = require(script.list_entries.NumericStepperEntry)
 local TextAreaEntry = require(script.list_entries.TextAreaEntry)
 local CheckBoxEntry = require(script.list_entries.CheckBoxEntry)
+local ImageButtonEntry = require(script.list_entries.ImageButtonEntry)
 
 local e = Roact.createElement
 -----------------------------------------------------------------------------
@@ -101,11 +102,19 @@ function App:render()
                 }, {
                     ButtonsEntry = e(ButtonEntry)
                 }),
+
+                ImageButtonEntry = e("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 100),
+                    LayoutOrder = 1
+                }, {
+                    ImageButtons = e(ImageButtonEntry)
+                }),
     
                 TextBoxListEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 100),
-                    LayoutOrder = 1
+                    LayoutOrder = 2
                 }, {
                     TextBoxEntry = e(TextBoxEntry)
                 }),
@@ -113,7 +122,7 @@ function App:render()
                 SliderListEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 100),
-                    LayoutOrder = 2
+                    LayoutOrder = 3
                 }, {
                     SliderEntry = e(SliderEntry)
                 }),
@@ -121,7 +130,7 @@ function App:render()
                 ComboBoxEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 100),
-                    LayoutOrder = 3
+                    LayoutOrder = 4
                 }, {
                     ComboBoxEntry = e(ComboBoxEntry)
                 }),
@@ -129,7 +138,7 @@ function App:render()
                 NumericStepperEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 100),
-                    LayoutOrder = 4
+                    LayoutOrder = 5
                 }, {
                     NumericStepper = e(NumericStepperEntry)
                 }),
@@ -137,7 +146,7 @@ function App:render()
                 TextAreaEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 300),
-                    LayoutOrder = 4
+                    LayoutOrder = 6
                 }, {
                     TextArea = e(TextAreaEntry)
                 }),
@@ -145,10 +154,10 @@ function App:render()
                 CheckBoxEntry = e("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 100),
-                    LayoutOrder = 5
+                    LayoutOrder = 7
                 }, {
                     CheckBox = e(CheckBoxEntry)
-                })
+                }),
             })
         }),
     })
